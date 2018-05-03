@@ -12,3 +12,6 @@ CREATE TABLE entries (
 
 .mode tabs
 .import title.basics.tsv entries
+
+
+CREATE INDEX title_index ON entries(original_title)
