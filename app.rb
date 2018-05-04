@@ -11,9 +11,6 @@ set :expose_headers, "location,link"
 
 db = SQLite3::Database.new( "database.db" )
 
-$query = nil
-$latest = nil
-
 get '/movies' do
   rows = db.execute <<-SQL
        SELECT * FROM entries
@@ -29,12 +26,12 @@ end
 
 
 get '/search' do
-  $query = params['query']
-  if $query
-    p $query
+  query = params['query']
+  if query
+    p query
     rows = db.execute <<-SQL
        SELECT * from entries
-       WHERE UPPER(original_title) LIKE '%#{$query}%'
+       WHERE UPPER(original_title) LIKE '%#{query}%'
        ORDER BY original_title
        LIMIT 30;
     SQL
@@ -42,17 +39,19 @@ get '/search' do
     rows.each do |row|
       titles << row[3]
     end
-    $latest = titles.last
     json data: titles
   end
 end
 
 get '/update' do
-  if $query
+  query = params['query']
+  latest = params['latest']
+  p latest
+  if query
     rows = db.execute <<-SQL
        SELECT * from entries
-       WHERE UPPER(original_title) LIKE '%#{$query}%'
-       AND original_title > "#{$latest}"
+       WHERE UPPER(original_title) LIKE '%#{query}%'
+       AND original_title > "#{latest}"
        ORDER BY original_title
        LIMIT 30;
     SQL
@@ -61,9 +60,7 @@ get '/update' do
     rows.each do |row|
       titles << row[3]
     end
-    $latest = titles.last
-    puts $latest
-    puts $query
+
     json data: titles
   end
 end
